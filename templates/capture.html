@@ -1,0 +1,292 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<style>
+    @keyframes scannerAnimation {
+        0% {
+            transform: translateY(100%);
+            top: 0;
+            height: 8px;
+            opacity: 0.8;
+        }
+        50% {
+            top: 100%;
+            height: 8px;
+            opacity: 0.3;
+        }
+        51% {
+            transform: translateY(100%);
+            height: 8px;
+            opacity: 0.8;
+        }
+        100% {
+            transform: translateY(0);
+            top: 0;
+            height: 8px;
+            opacity: 0.3;
+        }
+    }
+
+    .video-container::before {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #00ff00; /* Green color */
+        animation: scannerAnimation 2.2s infinite;
+        box-shadow: 100px 100px 100px rgba(0, 255, 0, 0.5);
+    }
+
+    /* Added styles for the file name display box */
+    .file-name-box {
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        display: inline-block;
+    }
+
+    .video-container {
+        position: relative;
+        border: 3.2px solid #00ff00; /* Green border */
+        border-radius: 18px; /* Adjust border-radius as needed */
+        overflow: hidden; /* Ensure the border doesn't increase container size */
+    }
+
+    #loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>
+
+<!-- it will hide video feed if an image is captured -->
+{% if filename == '' %}
+ <h3 style="font-weight: bold; text-align: center; color: darkgreen;">Scan Leaf</h3> 
+
+<div id="videoContainer" class="video-container" style="margin-top: 10px; margin-right: 24px; margin-bottom: 10px; margin-left: 24px; max-width: 85vw; position: relative;">
+    <div id="loader" style="display:none;">
+        <img src="/static/images/plant.gif" alt="loading..." />
+    </div>
+    <video id="camera-feed" style="width: 100%; height: 100%; object-fit: cover;" autoplay></video>
+</div>
+<div class="--display --w-100 --h-40">
+    <form id="captureForm" class="--display --w-60 --h-100" method="POST" action="/capture" enctype="multipart/form-data">
+        <div class="choose-file">
+            <input type="hidden" name="image" id="file-input"/>
+            <input type="submit" style="display: none;">
+        </div>
+        <div class="submit --display" style="display: flex; justify-content: center;">
+            <button id="captureButton" class="btn btn-success" style="width: 36%;">Scan It</button>
+        </div>
+        <div class="instructions-box" style="background-color: #f0f0f0; padding: 15px; margin: 15px;">
+            <div class="text-center" style="color: red;">
+                <strong>Instructions:</strong><br>
+            </div>
+            <div class="text-center">
+                Adjust distance from leaf until focus achieved
+            </div>
+            <div class="text-center">
+                Focus on image without any jerks
+            </div>
+            <div class="text-center">
+                Upload images in good lighting with a uniform background
+            </div>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<!-- it will show video feed if an image is not captured -->
+{% if filename != '' %}
+<h3>Captured Image</h3>
+<div class="col-12 text-center">
+   <!-- <img src="/static/upload/{{ upload_file_name }}" alt="uploaded image" class="img-fluid" style="max-width: 100%;"> -->
+    <div class="file-name-box"><span>Captured Image : {{ image_filename }}</span></div>
+</div>
+
+
+
+{% if fileupload %}
+    <div class="container" id='myrow_result'>
+        <div class="row">
+            {% for name, info in data.items() %}
+                <div class="col-12">
+                    {% if loop.first %}
+                        <div class="sentence-container" style="background-color: ; color: white; padding: 7px; margin-left: 10px; margin-right: 10px; font-size: 22px;">
+                            <p>
+                                <span style="color: black;"><strong>Recognized as {{ name }} leaf </strong></span>
+                            </p>
+                            
+                        </div>
+                   
+                    <div class="col-12">
+                        <div class="details-container" style="background-color: darkgreen; color: white; padding: 10px;">
+                            <p>
+                                <span style="color: #bf80ff;"><strong>Details about {{ name }} : </strong></span> {{ info["details"]["description"] }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            </br>
+
+            <div class="col-12">
+                <table class="table" style="background-color: #b3b3cc;">
+                    <thead style="background-color: grey;">
+                        <tr>
+                            <th>Herb</th>
+                            <th>Confidence Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for name, info in data.items() %}
+                            <tr>
+                                <td>
+                                    {% if loop.first %}
+                                        <span class="reco"><strong>{{ name }}</strong> (Recognized)</span>
+                                    {% else %}
+                                        <strong>{{ name }}</strong>
+                                    {% endif %}
+                                </td>
+                                <td>{{ (info["probability"]*100)|round(1) }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-12 text-left">
+                <div class="image-container" style="background-color: #006600; color: white; padding: 10px;">
+                    <img src="/static/upload/{{ image_filename }}" alt="uploaded image" class="img-fluid" style="max-width: 100%;">
+                </div>
+                <p class="image-tag">Scanned LEAF Name: {{ image_filename }}</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if extension %}
+<div class="container" id="myrow_result">
+    <div class="row">
+        <div class="col-12">
+            <p class="text-danger">Invalid Extension!</p>
+            <p>Extension should be jpg</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+
+
+
+
+{% endif %}
+
+<div>
+    {{error_message}}
+</div>
+
+<script>
+
+    // Wait for the DOM to be loaded
+    document.addEventListener("DOMContentLoaded", () => {
+        // Check the reload count from sessionStorage
+        const reloadCount = parseInt(sessionStorage.getItem('reloadCount')) || 0;
+
+        // If the reload count is less than 2, reload the page and increment the count
+        if (reloadCount < 1) {
+            // Increment the reload count
+            sessionStorage.setItem('reloadCount', reloadCount + 1);
+
+            // Reload the page after 2 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+    });
+    // Wait for the DOM to be loaded before initializing the media devices
+    document.addEventListener("DOMContentLoaded", () => {
+        const videoContainer = document.getElementById("videoContainer");
+        const captureButton = document.getElementById("captureButton");
+        const capturedImageInput = document.getElementById("file-input");
+        const fileNameDisplay = document.querySelector(".file-name-box span"); // Update the selector
+
+        let isMaxWidth40vw = true;
+
+        // Toggle max-width on touch
+        videoContainer.addEventListener("click", () => {
+            if (isMaxWidth40vw) {
+                videoContainer.style.maxWidth = "85vw";
+            } else {
+                videoContainer.style.maxWidth = "90vw";
+            }
+            isMaxWidth40vw = !isMaxWidth40vw;
+        });
+
+        // Access the user's camera with rear camera preference
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                const rearCamera = devices.find(device => device.kind === 'videoinput' && device.label.toLowerCase().includes('back'));
+                if (rearCamera) {
+                    return navigator.mediaDevices.getUserMedia({ video: { deviceId: rearCamera.deviceId } });
+                } else {
+                    // If no rear camera found, fall back to any available camera
+                    return navigator.mediaDevices.getUserMedia({ video: true });
+                    // If no rear camera found, display an error
+                   // throw new Error('No rear camera available.');
+                }
+            })
+            .then((stream) => {
+                // Create a video element to display the camera feed
+                const video = document.getElementById("camera-feed");
+                video.srcObject = stream;
+         
+                 // Autofocus logic
+                 video.addEventListener('loadedmetadata', () => {
+                    video.play(); // Start playing the video
+                    video.focus(); // Autofocus on the video
+                });
+
+                const loader = document.getElementById("loader");
+                // Function to capture the image
+                const captureImage = () => {
+                    loader.style.display = "block";
+                    const canvas = document.createElement("canvas");
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const context = canvas.getContext("2d");
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                     
+                     
+                    // Convert the captured image to a base64 data to save it as .png file
+                    const imageDataUrl = canvas.toDataURL("image/jpg");
+
+                    // Set the base64 data in the hidden input field
+                    capturedImageInput.value = imageDataUrl;
+
+                    // Update the file name display
+                    fileNameDisplay.textContent = "File Name: " + filename;
+
+                    // Submit the form to save the image on the server
+                    captureForm.submit();
+                };
+                // `captureButton` click event
+                captureButton.addEventListener("click", captureImage);
+            })
+            .catch((error) => {
+                // Display an error message if access to media devices is denied
+                console.error("Error accessing the camera:", error);
+            });
+           
+    });
+</script>
+{% endblock %}

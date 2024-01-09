@@ -1,0 +1,144 @@
+{% extends 'index.html' %}
+
+{% block upload %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<div class="container" id="myrow">
+    <div class="container" style="color: Black;">
+        <h5 class="custom-text"><strong>Let's Check Ayurvedic Herb or not</strong></h5>
+    </div>
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="uploadimg" href="#upload-image">Upload Herb Leaf Image</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="upload-image" role="tabpanel" aria-labelledby="Uploading..."></div>
+        <div class="row">
+            <div class="col-md-6 offset-md-3 col-12">
+                <form id="uploadForm" action="#" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" name="image_name" class="form-control" style="background-color: rgb(49, 165, 93); color: azure;" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="submit" value="Submit" class="btn btn-success btn-block" id="submitBtn">
+                    </div>
+                    <div class="text-center" style="color: red;">
+                        <strong>Instructions:</strong><br>
+                    </div>
+                    <div class="text-center">
+                        Only upload files with extensions ".jpg"
+                    </div>
+                    <div class="text-center">
+                        Upload image in good lighting and uniform background
+                    </div>
+                </form>
+                <div id="loader" style="display:none;">
+                    <img src="/static/images/plant.gif" alt="loading..." />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function(){
+        $("#uploadForm").submit(function(){
+            $("#loader").show(); // Display loader when form is submitted
+        });
+    });
+</script>
+
+{% if fileupload %}
+    <div class="container" id='myrow_result'>
+        <div class="row">
+            {% for name, info in data.items() %}
+                <div class="col-12">
+                    {% if loop.first %}
+                        <div class="sentence-container" style="background-color: ; color: white; padding: 7px; margin-left: 10px; margin-right: 10px; font-size: 22px;">
+                            <p>
+                                <span style="color: black;"><strong>Recognized as {{ name }} leaf </strong></span>
+                            </p>
+                            
+                        </div>
+                   
+                    <div class="col-12">
+                        <div class="details-container" style="background-color: darkgreen; color: white; padding: 10px;">
+                            <p>
+                                <span style="color: #bf80ff;"><strong>Details about {{ name }} : </strong></span> {{ info["details"]["description"] }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            </br>
+
+            <div class="col-12">
+                <table class="table" style="background-color: #b3b3cc;">
+                    <thead style="background-color: grey;">
+                        <tr>
+                            <th>Herb</th>
+                            <th>Confidence Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for name, info in data.items() %}
+                            <tr>
+                                <td>
+                                    {% if loop.first %}
+                                        <span class="reco"><strong>{{ name }}</strong> (Recognized)</span>
+                                    {% else %}
+                                        <strong>{{ name }}</strong>
+                                    {% endif %}
+                                </td>
+                                <td>{{ (info["probability"]*100)|round(1) }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-12 text-left">
+                <div class="image-container" style="background-color: #006600; color: white; padding: 10px;">
+                    <img src="/static/upload/{{ image_filename }}" alt="uploaded image" class="img-fluid" style="max-width: 100%;">
+                </div>
+                <p class="image-tag">Scanned Leaf Name: {{ image_filename }}</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+{% if extension %}
+<div class="container" id="myrow_result">
+    <div class="row">
+        <div class="col-12">
+            <p class="text-danger">Invalid Extension!</p>
+            <p>Extension should be jpg</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+     #myrow {
+        background-color: rgb(205, 205, 205);
+        padding: 3%;
+    }
+
+    #myrow_result {
+        background-color: rgb(205, 205, 205);
+        padding: 5%;
+        align-content: center;
+    }
+
+    #loader {
+        text-align: center;
+    }
+</style>
+
+{% endblock %}

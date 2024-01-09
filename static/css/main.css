@@ -1,0 +1,8 @@
+.btn {
+    border: 2px solid #007bff; /* Example border color: blue */
+    padding: 10px 20px; /* Optional: add padding to make the button more visually appealing */
+    border-radius: 5px; /* Optional: add border radius for rounded corners */
+    font-size: 16px; /* Optional: adjust font size */
+    background-color: #fff; /* Optional: set background color */
+    color: #007bff; /* Optional: set text color */
+}
